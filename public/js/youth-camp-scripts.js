@@ -1,4 +1,4 @@
-// public/camp/js/youth-camp-scripts.js
+// camp-deploy/public/js/youth-camp-scripts.js
 
 // Initialize camp-specific reCAPTCHA v2
 function initializeCampRecaptcha() {

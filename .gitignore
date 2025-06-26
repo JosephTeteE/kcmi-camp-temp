@@ -1,0 +1,33 @@
+#Ignore the.env file
+.env
+
+#Ignore the .htpasswd file
+.htpasswd
+
+.crt
+.pem
+.key
+
+#Ignore node_modules
+node_modules
+server/certs/
+ca.txt
+
+.DS_Store
+public/**/.DS_Store
+server/**/.DS_Store
+
+kcmi-rcc-worker/node_modules/
+kcmi-rcc-worker/package-lock.json
+kcmi-rcc-worker/.wrangler/
+
+# Multer uploads
+uploads/
+
+# Ignore the build directory
+internal-docs.md
+
+# Ignore build logs
+.vercel/
+.next/
+out/
