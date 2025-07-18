@@ -1,53 +1,52 @@
-// camp-deploy/public/js/youth-camp-scripts.js
+// camp-deploy/public/js/youth-camp-scripts.ts
+// This file contains the JavaScript code for the youth camp deployment website.
+// It handles the reCAPTCHA integration for the camp registration form,
+// the camp registration submission, and the file upload functionality.
 
-// Initialize camp-specific reCAPTCHA v2
-function initializeCampRecaptcha() {
-  console.log("Initializing camp reCAPTCHA");
+function initializeCampRecaptcha(): void {
+  console.log("Initializing camp reCAPTCHA (v2)");
 
-  const campForm = document.getElementById("campRegistrationForm");
-  const submitBtn = document.getElementById("submitCampFormBtn");
+  const campForm = document.getElementById("campRegistrationForm") as HTMLFormElement;
+  const submitBtn = document.getElementById("submitCampFormBtn") as HTMLButtonElement;
 
   if (!campForm || !submitBtn) {
     console.error("Camp form elements not found");
     return;
   }
 
-  if (typeof grecaptcha === "undefined") {
-    console.error("reCAPTCHA not loaded");
+  if (typeof grecaptcha === "undefined" || typeof grecaptcha.render === "undefined") {
+    console.error("reCAPTCHA not loaded correctly for v2 rendering.");
     const formStatus = document.getElementById("formStatus");
     if (formStatus) {
-      formStatus.textContent =
-        "Security verification failed to load. Please refresh the page.";
+      formStatus.textContent = "Security verification failed to load. Please refresh the page.";
       formStatus.style.color = "red";
     }
     return;
   }
 
-  // Render v2 invisible recaptcha
   const recaptchaWidgetId = grecaptcha.render(submitBtn, {
-    sitekey: "6LdcG2grAAAAAKp6kKoG58Nmu0-6NPHcj7rkd6Zk",
+    sitekey: "6LdcG2grAAAAAKp6kKoG58Nmu0-6NPHcj7rkd6Zk", // The v2 Site Key
     size: "invisible",
     badge: "bottomright",
-    callback: function (token) {
-      document.getElementById("recaptchaToken").value = token;
+    callback: (token: string) => {
+      const recaptchaTokenInput = document.getElementById("recaptchaToken") as HTMLInputElement;
+      if (recaptchaTokenInput) {
+        recaptchaTokenInput.value = token;
+      }
       submitCampForm();
     },
   });
 
-  // Camp form submission logic
-  campForm.addEventListener("submit", function (e) {
+// Attach the submit event listener to the camp form
+  campForm.addEventListener("submit", (e: Event) => {
     e.preventDefault();
-    // Execute reCAPTCHA
     grecaptcha.execute(recaptchaWidgetId);
   });
 }
 
-// Rest of your existing code remains the same...
-
-// Camp form submission handler
-function submitCampForm() {
-  const form = document.getElementById("campRegistrationForm");
-  const submitBtn = document.getElementById("submitCampFormBtn");
+function submitCampForm(): void {
+  const form = document.getElementById("campRegistrationForm") as HTMLFormElement;
+  const submitBtn = document.getElementById("submitCampFormBtn") as HTMLButtonElement;
   const formStatus = document.getElementById("formStatus");
   const successMessage = document.getElementById("successMessage");
 
@@ -77,7 +76,7 @@ function submitCampForm() {
   const xhr = new XMLHttpRequest();
   xhr.open("POST", "https://kcmi-backend.onrender.com/api/camp-registration");
 
-  xhr.upload.onprogress = function (event) {
+  xhr.upload.onprogress = function (event: ProgressEvent) {
     if (event.lengthComputable && formStatus) {
       const progressBar = formStatus.querySelector(".upload-progress");
       if (progressBar) {
@@ -140,18 +139,16 @@ function submitCampForm() {
   xhr.send(formData);
 }
 
-// Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", function () {
   let isSubmitting = false;
-  const form = document.getElementById("campRegistrationForm");
-  const submitBtn = document.getElementById("submitCampFormBtn");
+  const form = document.getElementById("campRegistrationForm") as HTMLFormElement;
+  const submitBtn = document.getElementById("submitCampFormBtn") as HTMLButtonElement;
   const formStatus = document.getElementById("formStatus");
 
-  // Initialize all copy functionality
-  const setupCopyFunctionality = (spanElement, confirmationElement) => {
+  const setupCopyFunctionality = (spanElement: HTMLElement | null, confirmationElement: HTMLElement | null) => {
     if (spanElement) {
       spanElement.addEventListener("click", async function () {
-        const accountNumber = this.childNodes[0].textContent.trim();
+        const accountNumber = this.childNodes[0].textContent?.trim() || "";
 
         try {
           await navigator.clipboard.writeText(accountNumber);
@@ -185,7 +182,7 @@ document.addEventListener("DOMContentLoaded", function () {
           errorMsg.className = "alert alert-danger mt-2";
           errorMsg.style.fontSize = "0.9em";
           errorMsg.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i> Failed to copy. Please copy manually: ${accountNumber}`;
-          spanElement.parentNode.insertBefore(
+          spanElement.parentNode?.insertBefore(
             errorMsg,
             spanElement.nextSibling
           );
@@ -198,7 +195,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  // Set up all account number copy elements
   const accountNumbers = [
     {
       element: document.getElementById("youthCampDonationAccountNumber"),
@@ -218,7 +214,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Add hover effects to donation benefits
   const benefitItems = document.querySelectorAll(
     ".youth-camp-donation-benefits .list-group-item"
   );
@@ -234,22 +229,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Pulse animation for donation icon
   const donationIcon = document.querySelector(".youth-camp-donation-icon i");
   if (donationIcon) {
     setInterval(() => {
-      donationIcon.style.transform = "rotate(-5deg)";
+      (donationIcon as HTMLElement).style.transform = "rotate(-5deg)";
       setTimeout(() => {
-        donationIcon.style.transform = "rotate(5deg)";
+        (donationIcon as HTMLElement).style.transform = "rotate(5deg)";
       }, 1000);
       setTimeout(() => {
-        donationIcon.style.transform = "rotate(0deg)";
+        (donationIcon as HTMLElement).style.transform = "rotate(0deg)";
       }, 2000);
     }, 8000);
   }
 
-  // --- Receipt Upload Enhancement ---
-  const paymentReceiptInput = document.getElementById("paymentReceipt");
+  const paymentReceiptInput = document.getElementById("paymentReceipt") as HTMLInputElement;
   const dropPasteZone = document.getElementById("dropPasteZone");
   const fileNameDisplay = document.getElementById("fileNameDisplay");
   const selectedFileNameSpan = document.getElementById("selectedFileName");
@@ -258,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "paymentReceiptInvalidFeedback"
   );
 
-  function setReceiptFile(file) {
+  function setReceiptFile(file: File | null): void {
     const dataTransfer = new DataTransfer();
     if (file) dataTransfer.items.add(file);
     paymentReceiptInput.files = dataTransfer.files;
@@ -267,10 +260,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const fileStatusText = document.getElementById("fileStatusText");
 
     if (file) {
-      selectedFileNameSpan.textContent = file.name;
-      fileNameDisplay.style.display = "flex";
-      fileNameDisplay.classList.add("file-selected-state");
-      dropPasteZone.style.display = "none";
+      selectedFileNameSpan!.textContent = file.name;
+      fileNameDisplay!.style.display = "flex";
+      fileNameDisplay!.classList.add("file-selected-state");
+      dropPasteZone!.style.display = "none";
 
       if (fileStatusIcon && fileStatusText) {
         fileStatusIcon.className = "fas fa-check-circle text-success me-2";
@@ -282,10 +275,10 @@ document.addEventListener("DOMContentLoaded", function () {
         paymentReceiptInvalidFeedback.style.display = "none";
       }
     } else {
-      selectedFileNameSpan.textContent = "";
-      fileNameDisplay.style.display = "none";
-      fileNameDisplay.classList.remove("file-selected-state");
-      dropPasteZone.style.display = "flex";
+      selectedFileNameSpan!.textContent = "";
+      fileNameDisplay!.style.display = "none";
+      fileNameDisplay!.classList.remove("file-selected-state");
+      dropPasteZone!.style.display = "flex";
 
       if (fileStatusIcon && fileStatusText) {
         fileStatusIcon.className = "";
@@ -294,21 +287,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Setup file input handlers
   if (paymentReceiptInput && dropPasteZone) {
     const browseLink = dropPasteZone.querySelector(".browse-link");
     if (browseLink) {
-      browseLink.addEventListener("click", (event) => {
+      browseLink.addEventListener("click", (event: Event) => {
         event.stopPropagation();
         paymentReceiptInput.click();
       });
     }
 
     paymentReceiptInput.addEventListener("change", function () {
-      setReceiptFile(this.files.length > 0 ? this.files[0] : null);
+      setReceiptFile(this.files && this.files.length > 0 ? this.files[0] : null);
     });
 
-    dropPasteZone.addEventListener("dragover", (event) => {
+    dropPasteZone.addEventListener("dragover", (event: DragEvent) => {
       event.preventDefault();
       dropPasteZone.classList.add("highlight");
     });
@@ -317,11 +309,11 @@ document.addEventListener("DOMContentLoaded", function () {
       dropPasteZone.classList.remove("highlight");
     });
 
-    dropPasteZone.addEventListener("drop", (event) => {
+    dropPasteZone.addEventListener("drop", (event: DragEvent) => {
       event.preventDefault();
       dropPasteZone.classList.remove("highlight");
 
-      if (event.dataTransfer.files.length > 0) {
+      if (event.dataTransfer && event.dataTransfer.files.length > 0) {
         const file = event.dataTransfer.files[0];
         const allowedTypes = [
           "image/jpeg",
@@ -343,17 +335,19 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  document.addEventListener("paste", (event) => {
+  document.addEventListener("paste", (event: ClipboardEvent) => {
     if (
       dropPasteZone &&
       window.getComputedStyle(dropPasteZone).display !== "none"
     ) {
-      const items = event.clipboardData.items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].kind === "file") {
-          const file = items[i].getAsFile();
-          if (file) setReceiptFile(file);
-          break;
+      const items = event.clipboardData?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].kind === "file") {
+            const file = items[i].getAsFile();
+            if (file) setReceiptFile(file);
+            break;
+          }
         }
       }
     }
@@ -369,9 +363,8 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Form validation
   if (form) {
-    form.addEventListener("submit", async function (event) {
+    form.addEventListener("submit", async function (event: Event) {
       event.preventDefault();
 
       if (isSubmitting) return;
@@ -381,39 +374,38 @@ document.addEventListener("DOMContentLoaded", function () {
         formStatus.className = "mt-3 text-center fw-bold fs-5";
       }
       Array.from(form.elements).forEach((el) =>
-        el.classList.remove("is-invalid")
+        (el as HTMLElement).classList.remove("is-invalid")
       );
 
-      // Client-side validation
       let isValid = true;
-      const fullName = form.elements["fullName"].value.trim();
-      const email = form.elements["email"].value.trim();
-      const phoneNumber = form.elements["phoneNumber"].value.trim();
-      const numPeople = parseInt(form.elements["numPeople"].value);
-      const paymentReceipt = form.elements["paymentReceipt"].files[0];
+      const fullName = (form.elements.namedItem("fullName") as HTMLInputElement).value.trim();
+      const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+      const phoneNumber = (form.elements.namedItem("phoneNumber") as HTMLInputElement).value.trim();
+      const numPeople = parseInt((form.elements.namedItem("numPeople") as HTMLInputElement).value);
+      const paymentReceipt = (form.elements.namedItem("paymentReceipt") as HTMLInputElement).files?.[0];
 
       if (!fullName) {
-        form.elements["fullName"].classList.add("is-invalid");
+        (form.elements.namedItem("fullName") as HTMLInputElement).classList.add("is-invalid");
         isValid = false;
       }
 
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        form.elements["email"].classList.add("is-invalid");
+        (form.elements.namedItem("email") as HTMLInputElement).classList.add("is-invalid");
         isValid = false;
       }
 
       if (!phoneNumber || !/^\+?[0-9\s-]{7,15}$/.test(phoneNumber)) {
-        form.elements["phoneNumber"].classList.add("is-invalid");
+        (form.elements.namedItem("phoneNumber") as HTMLInputElement).classList.add("is-invalid");
         isValid = false;
       }
 
       if (isNaN(numPeople) || numPeople < 1 || numPeople > 10) {
-        form.elements["numPeople"].classList.add("is-invalid");
+        (form.elements.namedItem("numPeople") as HTMLInputElement).classList.add("is-invalid");
         isValid = false;
       }
 
       if (!paymentReceipt) {
-        form.elements["paymentReceipt"].classList.add("is-invalid");
+        (form.elements.namedItem("paymentReceipt") as HTMLInputElement).classList.add("is-invalid");
         if (paymentReceiptInvalidFeedback) {
           paymentReceiptInvalidFeedback.style.display = "block";
         }
@@ -428,7 +420,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      // All validation passed - trigger reCAPTCHA
       isSubmitting = true;
       submitBtn.disabled = true;
       submitBtn.innerHTML =
@@ -437,16 +428,12 @@ document.addEventListener("DOMContentLoaded", function () {
         formStatus.textContent = "Verifying with reCAPTCHA...";
         formStatus.style.color = "blue";
       }
-
-      // The actual reCAPTCHA execution will be handled by the onCampRecaptchaLoad function
-      // which is called when the reCAPTCHA v2 script loads
     });
   }
 
-  // Add smooth scroll to opened accordion items
   document.querySelectorAll(".accordion").forEach((accordion) => {
-    accordion.addEventListener("shown.bs.collapse", function (e) {
-      const openedItem = e.target;
+    accordion.addEventListener("shown.bs.collapse", function (e: Event) {
+      const openedItem = e.target as HTMLElement;
       const currentScroll = window.scrollY;
 
       requestAnimationFrame(() => {
@@ -461,14 +448,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Highlight donation section
-  function highlightDonationSection() {
+  function highlightDonationSection(): void {
     const donationSection = document.querySelector(
       ".youth-camp-donation-prompt-prominent"
     );
     if (donationSection) {
-      donationSection.style.boxShadow = "0 0 0 3px rgba(124, 25, 99, 0.3)";
-      setTimeout(() => (donationSection.style.boxShadow = ""), 1000);
+      (donationSection as HTMLElement).style.boxShadow = "0 0 0 3px rgba(124, 25, 99, 0.3)";
+      setTimeout(() => ((donationSection as HTMLElement).style.boxShadow = ""), 1000);
     }
   }
   setTimeout(highlightDonationSection, 1500);

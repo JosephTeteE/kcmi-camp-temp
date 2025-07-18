@@ -84,37 +84,25 @@
     <link rel="stylesheet" href="../css/styles.css" />
 
     <link rel="stylesheet" href="./css/youth-camp.css" />
-
-    <!-- reCAPTCHA v3 (for contact/subscription forms) -->
-    <script src="https://www.google.com/recaptcha/api.js?render=6LcRdOsqAAAAAMzghoNjWqpTB3AjOBayn8KIpxac"></script>
-
-    <!-- reCAPTCHA v2 (for camp registration) - Loaded conditionally -->
+    <!-- This script initializes the reCAPTCHA API for both v2 and v3 functionalities. -->
     <script>
-      // Define the callback function first
-      window.onCampRecaptchaLoad = function () {
-        console.log("reCAPTCHA v2 loaded");
-        initializeCampRecaptcha();
-      };
-
-      function loadV2Recaptcha() {
-        if (typeof grecaptcha === "undefined") {
-          var script = document.createElement("script");
-          script.src =
-            "https://www.google.com/recaptcha/api.js?onload=onCampRecaptchaLoad&render=explicit";
-          script.async = true;
-          script.defer = true;
-          document.head.appendChild(script);
-        } else {
-          // If grecaptcha is already loaded (from v3), just initialize
-          onCampRecaptchaLoad();
+      function onRecaptchaApiLoad() {
+        console.log("Unified reCAPTCHA API has loaded.");
+        // Initialize the v3 functionality (for the WhatsApp subscription modal)
+        if (typeof onLoadRecaptcha === "function") {
+          onLoadRecaptcha();
+        }
+        // Initialize the v2 functionality (for the camp registration form)
+        if (typeof initializeCampRecaptcha === "function") {
+          initializeCampRecaptcha();
         }
       }
-
-      // Load v2 when DOM is ready
-      document.addEventListener("DOMContentLoaded", function () {
-        loadV2Recaptcha();
-      });
     </script>
+    <script
+      src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaApiLoad&render=explicit"
+      async
+      defer
+    ></script>
   </head>
   <body class="d-flex flex-column min-vh-100 youth-camp-page">
     <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
