@@ -217,14 +217,15 @@ document.addEventListener("DOMContentLoaded", function () {
   const benefitItems = document.querySelectorAll(
     ".youth-camp-donation-benefits .list-group-item"
   );
+
   benefitItems.forEach((item) => {
     item.addEventListener("mouseenter", function () {
-      const icon = this.querySelector("i");
+      const icon = item.querySelector("i");
       if (icon) icon.style.transform = "scale(1.2)";
     });
 
     item.addEventListener("mouseleave", function () {
-      const icon = this.querySelector("i");
+      const icon = item.querySelector("i");
       if (icon) icon.style.transform = "scale(1)";
     });
   });
