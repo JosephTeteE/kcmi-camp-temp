@@ -36,51 +36,65 @@ async function submitCampForm(): Promise<void> {
     const submitBtn = document.getElementById("submitCampFormBtn") as HTMLButtonElement;
     const formStatus = document.getElementById("formStatus");
     const successMessage = document.getElementById("successMessage");
-  
+
     const CLOUD_NAME = "dbkunrzye";
     const UPLOAD_PRESET = "camp_receipts";
     const CLOUDINARY_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
-  
+
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading Receipt...';
     if (formStatus) {
       formStatus.textContent = "Uploading your payment receipt...";
       formStatus.style.color = "blue";
     }
-  
+
     try {
+      // 1. UPLOAD THE FILE TO CLOUDINARY (No changes here)
       const receiptInput = form.elements.namedItem("paymentReceipt") as HTMLInputElement;
       const receiptFile = receiptInput.files?.[0];
       if (!receiptFile) throw new Error("Payment receipt file is required.");
-  
+
       const cloudinaryFormData = new FormData();
       cloudinaryFormData.append("file", receiptFile);
       cloudinaryFormData.append("upload_preset", UPLOAD_PRESET);
-  
+
       const cloudinaryResponse = await fetch(CLOUDINARY_URL, { method: "POST", body: cloudinaryFormData });
       if (!cloudinaryResponse.ok) throw new Error("Failed to upload receipt to Cloudinary");
-  
+
       const cloudinaryData = await cloudinaryResponse.json();
       const receiptUrl = cloudinaryData.secure_url;
-  
+
+      // 2. SUBMIT FORM DATA AS JSON TO YOUR BACKEND
       submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Registering...';
       if (formStatus) formStatus.textContent = "Finalizing your registration...";
-  
-      const backendFormData = new FormData(form);
-      backendFormData.append("paymentReceiptUrl", receiptUrl);
-      backendFormData.delete("paymentReceipt");
-  
-      const recaptchaTokenInput = document.getElementById("recaptchaToken") as HTMLInputElement;
-      backendFormData.append("recaptchaToken", recaptchaTokenInput.value);
-  
-      const backendResponse = await fetch("https://kcmi-backend.onrender.com/api/camp-registration", { method: "POST", body: backendFormData });
+
+      // Create a plain JavaScript object with the form data
+      const registrationData = {
+        fullName: (form.elements.namedItem("fullName") as HTMLInputElement).value,
+        email: (form.elements.namedItem("email") as HTMLInputElement).value,
+        phoneNumber: (form.elements.namedItem("phoneNumber") as HTMLInputElement).value,
+        numPeople: (form.elements.namedItem("numPeople") as HTMLInputElement).value,
+        recaptchaToken: (document.getElementById("recaptchaToken") as HTMLInputElement).value,
+        paymentReceiptUrl: receiptUrl, // Add the Cloudinary URL
+      };
+
+      // Send the data as JSON
+      const backendResponse = await fetch("https://kcmi-backend.onrender.com/api/camp-registration", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(registrationData), // Convert the object to a JSON string
+      });
+
       const backendData = await backendResponse.json();
       if (!backendResponse.ok || !backendData.success) throw new Error(backendData.message || "Registration failed on our server.");
-  
+
+      // 3. SHOW SUCCESS MESSAGE
       localStorage.setItem("lastCampSubmission", Date.now().toString());
       if (formStatus) formStatus.textContent = "";
       form.style.display = "none";
       if (successMessage) successMessage.style.display = "block";
-  
+
     } catch (error: any) {
       if (formStatus) {
         formStatus.textContent = `Error: ${error.message}`;
